@@ -28,11 +28,84 @@ core <- core %>%
          avg_Eng = mean(c(ELA, EngI, EngII, EngIII), na.rm = TRUE),
          avg_Sci = mean(c(Science, BioI, Chemistry), na.rm = TRUE))
 
-#Attempting to merge....
+#Merging via county and rearranging the colnames to display the zip's and county's in th first two columns.  
 
 merged_county <- core %>% 
-  inner_join(TN_zips, by = 'county')
+  inner_join(TN_zips, by = 'county') 
 
+merged_county <- select(merged_county, zip, county, avg_Math, avg_Eng, avg_Sci, everything())
 View(merged_county)
+
+#I want to find the top and bottom 5 counties when it comes to graduation rates.  
+
+gradrate_by_county <- merged_county %>% 
+  group_by(county) %>% 
+  summarise(Graduation = mean(Graduation, na.rm = TRUE)) %>% 
+  arrange(desc(Graduation)) %>% 
+  ungroup()
+
+View(gradrate_by_county)
+
+top_5_gradrate <- gradrate_by_county %>% 
+  slice(1:5)
+bottom_5_gradrate <- gradrate_by_county %>% 
+  tail(5)
+  
+#Figuring out the top and bottom 5 county dropout rates.   
+
+droprate_by_county <- merged_county %>% 
+  group_by(county) %>% 
+  summarise(Dropout = mean(Dropout, na.rm = TRUE)) %>% 
+  arrange(desc(Dropout)) %>% 
+  ungroup()
+
+Top_5_droprate <- droprate_by_county %>% 
+  slice(1:5)
+Bottom_5_droprate <- droprate_by_county %>% 
+  tail(5)
+
+#Exploring how the avg Math, Eng, and Sci rates compare within counties.  
+
+avgs_by_county <- merged_county %>% 
+  group_by(county) %>% 
+  summarise(avg_Math = mean(avg_Math),
+            avg_Eng = mean(avg_Eng),
+            avg_Sci = mean(avg_Sci)) %>% 
+  arrange(desc(avg_Math), desc(avg_Eng), desc(avg_Sci)) %>% 
+  ungroup()
+
+#How many Core regions are there? ---> 8
+
+merged_county %>% 
+  group_by(CORE_region) %>% 
+  summarize(count = n())
+
+#Exploring avg's of core subjects amongst regions.
+
+avgmath_by_region <- merged_county %>% 
+  group_by(CORE_region) %>% 
+  summarise(avg_Math = mean(avg_Math))
+  arrange(desc(avg_Math))
+  
+ggplot(avgmath_by_region, aes(x = CORE_region, y = avg_Math)) +
+  geom_col()
+
+avgEng_by_region <- merged_county %>% 
+  group_by(CORE_region) %>% 
+  summarise(avg_Eng = mean(avg_Eng)) %>% 
+  arrange(desc(avg_Eng))
+
+ggplot(avgEng_by_region, aes(x = CORE_region, y = avg_Eng)) +
+  geom_col()
+
+avgSci_by_region <- merged_county %>% 
+  group_by(CORE_region) %>% 
+  summarise(avg_Sci = mean(avg_Sci)) %>% 
+  arrange(desc(avg_Sci))
+
+ggplot(avgSci_by_region, aes(x = CORE_region, y = avg_Sci)) +
+  geom_col()
+
+
 
 #------------------------------------------------------------------------------------
