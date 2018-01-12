@@ -1,0 +1,136 @@
+setwd('/Users/ssharma/code/nss-ds/data-question-4-skirmish-guards-1')
+library("tidyverse")
+library("dplyr")
+library("magrittr")
+library("ggplot2")
+# install.packages("readxl")
+library("readxl")
+
+# reading the 2011 IRS data
+tn_2011 <- read_xls("data/2011tn.xls", range = cell_rows(3:4724))
+tn_2011 <- tn_2011[4:4724,]
+View(tn_2011)
+# getting the data in the predecided order
+tn_2011_df <- select(tn_2011,`[Money amounts are in thousands of dollars]`,
+                     X__1,
+                     X__3,
+                     X__5,
+                     X__6,
+                     X__7,
+                     X__8,
+                     X__9,
+                     X__10,
+                     X__11,
+                     X__12,
+                     X__13,
+                     X__16,
+                     X__17,
+                     X__18,
+                     X__19,
+                     X__20,
+                     X__21,
+                     X__22,
+                     X__23,
+                     X__24,
+                     X__25,
+                     X__26,
+                     X__27,
+                     X__28,
+                     X__31,
+                     X__32,
+                     X__43,
+                     X__44,
+                     X__41,
+                     X__42,
+                     X__37,
+                     X__38,
+                     X__33,
+                     X__34,
+                     X__35,
+                     X__36,
+                     X__45,
+                     X__46,
+                     X__47,
+                     X__48,
+                     X__57,
+                     X__58,
+                     X__59,
+                     X__60,
+                     X__65,
+                     X__66,
+                     X__67,
+                     X__68,
+                     X__69,
+                     X__70,
+                     X__4)
+# standardizing col names in a vector
+cols <-c ('zip_code',
+         'agi_range',
+         'return_count',
+         'exemption_count',
+         'dependent_count' ,
+         'agi_amt' ,
+         'salary_wages_count',
+         'salary_wages_amt',
+         'taxable_interest_count',
+         'taxable_interest_amt',
+         'ordinary_dividends_count',
+         'ordinary_dividends_amt',
+         'business_income_count',
+         'business_income_amt' ,
+         'farm_income_count' ,
+         'net_capital_gain_count',
+         'net_capital_gain_amt',
+         'taxable_IRA_dist_count',
+         'taxable_IRA_dist_amt',
+         'pension_income_count',
+         'pension_income_amt',
+         'unemployment_count',
+         'unemployment_amt',
+         'social_security_count' ,
+         'social_security_amt' ,
+         'item_deduc_count',
+         'item_deduc_amt',
+         'charitable_contribution_count' ,
+         'charitable_contribution_amt' ,
+         'mortgage_int_count',
+         'mortgage_int_amt',
+         'property_tax_count',
+         'property_tax_amt',
+         'state_local_income_tax_count',
+         'state_local_income_tax_amt',
+         'state_local_sales_tax_count' ,
+         'state_local_sales_tax_amt' ,
+         'taxable_income_count',
+         'taxable_income_amt',
+         'tot_tax_credit_count',
+         'tot_tax_credit_amt',
+         'earned_income_credit_count',
+         'earned_income_credit_amt',
+         'excess_eaned_income_credit_count',
+         'excess_eaned_income_credit_amt',
+         'tax_liability_count' ,
+         'tax_liability_amt' ,
+         'balance_due_count' ,
+         'balance_due_amt' ,
+         'refund_count',
+         'refund_amt',
+         'paid_prep_count'
+         )
+# reanming column names in df
+colnames(tn_2011_df) <- cols
+# Adding year as a column
+tn_2011_df$year <- rep(2011,nrow(tn_2011_df))
+View(tn_2011_df)
+
+tn_2011_df %>%
+    rowwise() %>%
+    mutate(agi_amt_avg = agi_amt/return_count,
+           # salary_avg = salary_wages_amt/salary_wages_count,
+           # mortgage_amt_avg = mortgage_int_amt/mortgage_int_count,
+           # prop_tax_avg = property_tax_amt/property_tax_count,
+           # taxable_income_avg = taxable_income_amt/taxable_income_count,
+           # earned_income_credit_avg = earned_income_credit_amt/earned_income_credit_count,
+           # excess_eaned_income_credit_avg = excess_eaned_income_credit_amt/excess_eaned_income_credit_count
+           ) %>%
+    View()
