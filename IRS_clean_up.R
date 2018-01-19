@@ -13,7 +13,7 @@ View(tn_2011)
 # getting the data in the predecided order
 tn_2011_df <- select(tn_2011,`[Money amounts are in thousands of dollars]`,
                      X__1,
-                     X__3,
+                     X__2,
                      X__5,
                      X__6,
                      X__7,
@@ -62,7 +62,8 @@ tn_2011_df <- select(tn_2011,`[Money amounts are in thousands of dollars]`,
                      X__68,
                      X__69,
                      X__70,
-                     X__4)
+                     X__4
+                     )
 # standardizing col names in a vector
 cols <-c ('zip_code',
          'agi_range',
