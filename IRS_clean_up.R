@@ -119,18 +119,21 @@ cols <-c ('zip_code',
          )
 # reanming column names in df
 colnames(tn_2011_df) <- cols
+#omitting na in a row
+tn_2011_df <- tn_2011_df[rowSums(is.na(tn_2011_df))!=ncol(tn_2011_df), ]
 # Adding year as a column
 tn_2011_df$year <- rep(2011,nrow(tn_2011_df))
 View(tn_2011_df)
-
+# Adding total to the agi_range for further filtering
+tn_2011_df$agi_range[is.na(tn_2011_df$agi_range)] <- "Total"
+# Feature engineering: creating avg values for the following metrics
 tn_2011_df %>%
-    rowwise() %>%
-    mutate(agi_amt_avg = agi_amt/return_count,
-           # salary_avg = salary_wages_amt/salary_wages_count,
-           # mortgage_amt_avg = mortgage_int_amt/mortgage_int_count,
-           # prop_tax_avg = property_tax_amt/property_tax_count,
-           # taxable_income_avg = taxable_income_amt/taxable_income_count,
-           # earned_income_credit_avg = earned_income_credit_amt/earned_income_credit_count,
-           # excess_eaned_income_credit_avg = excess_eaned_income_credit_amt/excess_eaned_income_credit_count
+    mutate(agi_amt_avg = as.numeric(agi_amt)/as.numeric(return_count),
+           salary_avg = as.numeric(salary_wages_amt)/as.numeric(salary_wages_count),
+           mortgage_amt_avg = as.numeric(mortgage_int_amt)/as.numeric(mortgage_int_count),
+           prop_tax_avg = as.numeric(property_tax_amt)/as.numeric(property_tax_count),
+           taxable_income_avg = as.numeric(taxable_income_amt)/as.numeric(taxable_income_count),
+           earned_income_credit_avg = as.numeric(earned_income_credit_amt)/as.numeric(earned_income_credit_count),
+           excess_eaned_income_credit_avg = as.numeric(excess_eaned_income_credit_amt)/as.numeric(excess_eaned_income_credit_count)
            ) %>%
     View()
