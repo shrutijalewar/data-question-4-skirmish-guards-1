@@ -138,3 +138,80 @@ tn_2011_df %>%
            excess_eaned_income_credit_avg = as.numeric(excess_eaned_income_credit_amt)/as.numeric(excess_eaned_income_credit_count)
            ) %>%
     View()
+# reading in 2012
+tn_2012 <- read_xls("data/2012tn.xls", range = cell_rows(3:4725))
+tn_2012 <- tn_2012[4:4725,]
+View(tn_2012)
+# getting the data in the predecided order
+tn_2012_df <- select(tn_2012,`[Money amounts are in thousands of dollars]`,
+                     X__1,
+                     X__2,
+                     X__7,
+                     X__8,
+                     X__9,
+                     X__10,
+                     X__11,
+                     X__12,
+                     X__13,
+                     X__14,
+                     X__15,
+                     X__18,
+                     X__19,
+                     X__20,
+                     X__21,
+                     X__22,
+                     X__23,
+                     X__24,
+                     X__25,
+                     X__26,
+                     X__27,
+                     X__28,
+                     X__29,
+                     X__30,
+                     X__33,
+                     X__34,
+                     X__46,
+                     X__47,
+                     X__44,
+                     X__45,
+                     X__40,
+                     X__41,
+                     X__36,
+                     X__37,
+                     X__38,
+                     X__39,
+                     X__48,
+                     X__49,
+                     X__52,
+                     X__53,
+                     X__60,
+                     X__61,
+                     X__62,
+                     X__63,
+                     X__68,
+                     X__69,
+                     X__70,
+                     X__71,
+                     X__72,
+                     X__73,
+                     X__6)
+# reanming column names in df
+colnames(tn_2012_df) <- cols
+#omitting na in a row
+tn_2012_df <- tn_2012_df[rowSums(is.na(tn_2012_df))!=ncol(tn_2012_df), ]
+# Adding year as a column
+tn_2012_df$year <- rep(2012,nrow(tn_2012_df))
+View(tn_2012_df)
+# Adding total to the agi_range for further filtering
+tn_2012_df$agi_range[is.na(tn_2012_df$agi_range)] <- "Total"
+# Feature engineering: creating avg values for the following metrics
+tn_2012_df %>%
+    mutate(agi_amt_avg = as.numeric(agi_amt)/as.numeric(return_count),
+           salary_avg = as.numeric(salary_wages_amt)/as.numeric(salary_wages_count),
+           mortgage_amt_avg = as.numeric(mortgage_int_amt)/as.numeric(mortgage_int_count),
+           prop_tax_avg = as.numeric(property_tax_amt)/as.numeric(property_tax_count),
+           taxable_income_avg = as.numeric(taxable_income_amt)/as.numeric(taxable_income_count),
+           earned_income_credit_avg = as.numeric(earned_income_credit_amt)/as.numeric(earned_income_credit_count),
+           excess_eaned_income_credit_avg = as.numeric(excess_eaned_income_credit_amt)/as.numeric(excess_eaned_income_credit_count)
+    ) %>%
+    View()
