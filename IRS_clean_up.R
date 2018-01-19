@@ -128,7 +128,7 @@ View(tn_2011_df)
 # Adding total to the agi_range for further filtering
 tn_2011_df$agi_range[is.na(tn_2011_df$agi_range)] <- "Total"
 # Feature engineering: creating avg values for the following metrics
-tn_2011_df %>%
+irs_2011 <- tn_2011_df %>%
     mutate(agi_amt_avg = as.numeric(agi_amt)/as.numeric(return_count),
            salary_avg = as.numeric(salary_wages_amt)/as.numeric(salary_wages_count),
            mortgage_amt_avg = as.numeric(mortgage_int_amt)/as.numeric(mortgage_int_count),
@@ -136,8 +136,10 @@ tn_2011_df %>%
            taxable_income_avg = as.numeric(taxable_income_amt)/as.numeric(taxable_income_count),
            earned_income_credit_avg = as.numeric(earned_income_credit_amt)/as.numeric(earned_income_credit_count),
            excess_eaned_income_credit_avg = as.numeric(excess_eaned_income_credit_amt)/as.numeric(excess_eaned_income_credit_count)
-           ) %>%
-    View()
+           )
+    View(irs_2011)
+    # write output as csv
+    write.csv(irs_2011,'data/irs_2011.xls')
 # reading in 2012
 tn_2012 <- read_xls("data/2012tn.xls", range = cell_rows(3:4725))
 tn_2012 <- tn_2012[4:4725,]
@@ -205,7 +207,7 @@ View(tn_2012_df)
 # Adding total to the agi_range for further filtering
 tn_2012_df$agi_range[is.na(tn_2012_df$agi_range)] <- "Total"
 # Feature engineering: creating avg values for the following metrics
-tn_2012_df %>%
+irs_2012 <- tn_2012_df %>%
     mutate(agi_amt_avg = as.numeric(agi_amt)/as.numeric(return_count),
            salary_avg = as.numeric(salary_wages_amt)/as.numeric(salary_wages_count),
            mortgage_amt_avg = as.numeric(mortgage_int_amt)/as.numeric(mortgage_int_count),
@@ -213,5 +215,7 @@ tn_2012_df %>%
            taxable_income_avg = as.numeric(taxable_income_amt)/as.numeric(taxable_income_count),
            earned_income_credit_avg = as.numeric(earned_income_credit_amt)/as.numeric(earned_income_credit_count),
            excess_eaned_income_credit_avg = as.numeric(excess_eaned_income_credit_amt)/as.numeric(excess_eaned_income_credit_count)
-    ) %>%
-    View()
+    )
+    View(irs_2012)
+    # write as csv for sharing
+    write.csv(irs_2012,'data/irs_2012.xls')
