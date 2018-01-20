@@ -54,7 +54,14 @@ plot(as.factor(total$CORE_region), total$agi_amt_avg)
 plot(total$avg_Eng, total$avg_Math)
 plot(total$avg_Sci,total$avg_Math)
 plot(total$avg_Eng, total$avg_Sci)
+
 ggcorr(total)
 
 pairs(~avg_Math+Graduation+Pct_BHN+avg_Eng, data=total,
       main="Simple Scatterplot Matrix")
+
+total_1 <- select(total, county, zip_code,CORE_region, year, agi_amt_avg,salary_avg,mortgage_amt_avg,prop_tax_avg,taxable_income_avg,
+                  taxable_income_amt, earned_income_credit_avg,excess_eaned_income_credit_avg,avg_Eng, avg_Sci, avg_Math, Pct_Expelled, Pct_BHN,
+                  Pct_Suspended, ACT_Composite,earned_income_credit_avg, Pct_ED,Pct_SWD
+                  )
+ggcorr(total_1)
