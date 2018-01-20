@@ -5,6 +5,7 @@ library("magrittr")
 library("ggplot2")
 # install.packages("readxl")
 library("readxl")
+library("GGally")
 
 # reading the cleaner all year IRS data
 irs_2011 <- read_csv("data/irs_2011.csv")
@@ -34,3 +35,26 @@ edu_2014$zip_code <- edu_2014$zip
 total <- merge(total_irs,edu_2014,by="zip_code")
 glimpse(total)
 View(total)
+
+# Doing initial data exploration
+plot(total$agi_amt_avg, total$Dropout)
+
+plot(total$salary_avg, total$Graduation)
+plot(as.factor(total$zip_code), total$Pct_Chronically_Absent)
+plot(total$zip_code, total$salary_avg)
+hist(total$Pct_BHN)
+hist(total$Dropout)
+hist(total$Graduation)
+hist(total$return_count)
+hist(total$agi_amt_avg)
+plot(total$property_tax_amt, total$Dropout)
+plot(as.factor(total$CORE_region), total$Pct_Chronically_Absent)
+plot(as.factor(total$CORE_region), total$Pct_BHN)
+plot(as.factor(total$CORE_region), total$agi_amt_avg)
+plot(total$avg_Eng, total$avg_Math)
+plot(total$avg_Sci,total$avg_Math)
+plot(total$avg_Eng, total$avg_Sci)
+ggcorr(total)
+
+pairs(~avg_Math+Graduation+Pct_BHN+avg_Eng, data=total,
+      main="Simple Scatterplot Matrix")
