@@ -36,6 +36,8 @@ merged_county <- core %>%
 merged_county <- select(merged_county, zip, county, avg_Math, avg_Eng, avg_Sci, everything())
 View(merged_county)
 
+write.csv(merged_county, "education_data.csv")
+
 #I want to find the top and bottom 5 counties when it comes to graduation rates.  
 
 gradrate_by_county <- merged_county %>% 
