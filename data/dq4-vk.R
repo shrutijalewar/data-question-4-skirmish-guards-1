@@ -7,6 +7,7 @@ library("dplyr")
 library("ggplot2")
 # install.packages(“readxl”)
 library("readxl")
+library(psych) #install.packages("psych")
 
 # read 2011 TN IRS data file #
 
@@ -265,7 +266,7 @@ library("readxl")
                   excess_eaned_income_credit_avg = as.numeric(excess_eaned_income_credit_amt)/as.numeric(excess_eaned_income_credit_count)
            ) 
            View(irs_2014)
-         write.csv(irs_2014,'data/irs_2014.xls')
+         write.csv(irs_2014,'data/irs_2014.csv')
          
          #Importing the zip code and core dataframes.  
          
@@ -300,7 +301,51 @@ library("readxl")
            inner_join(TN_zips, by = 'county') 
          
          merged_county <- select(merged_county, zip, county, avg_Math, avg_Eng, avg_Sci, everything())
+         colnames(merged_county)[1] <- 'zip_code'
          View(merged_county)
+         View(irs_2014)
+         irs_2014$zip_code = as.numeric(irs_2014$zip_code)
+         
+         str(merged_county)
+         str(irs_2014)
+         
+         # join irs dataset with zipcode and core achievement dataset
+         merged_irs <- inner_join(irs_2014, merged_county, by=c('zip_code' = 'zip_code'))
+         #merged_irs <- irs_2014 %>% 
+         #  inner_join(merged_county, by = 'zip_code') 
+         View(merged_irs)
+         
+         summary(merged_irs)
+         
+         describe(merged_irs)
+         
+         mfv(merged_irs)
+         
+         cor(as.numeric(merged_irs$agi_amt), merged_irs$zip_code)
+         
+         
+           # Basic Scatterplot Matrix
+           pairs(~as.numeric(agi_amt)+Graduation+Pct_BHN+Dropout, data=merged_irs, 
+                 main="Simple Scatterplot Matrix")
+           
+           res <- cor.test(merged_irs$agi_amt, merged_irs$Pct_BHN, 
+                           method = "pearson")
+           res
+           
+           library(PerformanceAnalytics)
+           
+           chart.Correlation(as.numeric(merged_irs$agi_amt), 
+                             method="pearson",
+                             histogram=TRUE,
+                             pch=16)
+         
+         # Correlations/covariances among numeric variables in 
+         # data frame mtcars. Use listwise deletion of missing data. 
+         cor(merged_irs$agi_amt, use="complete.obs", method="kendall") 
+         cov(merged_irs$agi_amt, use="complete.obs")
+         
+         #https://rcompanion.org/rcompanion/e_05.html
+         
          
          #we want to find the top and bottom 5 counties when it comes to graduation rates.  
          
