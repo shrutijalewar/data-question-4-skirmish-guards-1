@@ -139,7 +139,7 @@ irs_2011 <- tn_2011_df %>%
            )
     View(irs_2011)
     # write output as csv
-    write.csv(irs_2011,'data/irs_2011.xls')
+    write.csv(irs_2011,'data/irs_2011.csv')
 # reading in 2012
 tn_2012 <- read_xls("data/2012tn.xls", range = cell_rows(3:4725))
 tn_2012 <- tn_2012[4:4725,]
@@ -218,4 +218,4 @@ irs_2012 <- tn_2012_df %>%
     )
     View(irs_2012)
     # write as csv for sharing
-    write.csv(irs_2012,'data/irs_2012.xls')
+    write.csv(irs_2012,'data/irs_2012.csv')
