@@ -43,10 +43,12 @@ View(merged)
 
 ggcorr(merged)
 
-table_1 <- c(Graduation,Dropout,Pct_BHN,agi_amt)
+total_2 <- select(year, agi_amt_avg,salary_avg,mortgage_amt_avg,prop_tax_avg,taxable_income_avg,
+                  taxable_income_amt, earned_income_credit_avg,excess_eaned_income_credit_avg,avg_Eng, avg_Sci, avg_Math, Pct_Expelled, Pct_BHN,
+                  Pct_Suspended, ACT_Composite,earned_income_credit_avg, Pct_ED,Pct_SWD
+)
 
-ggcorr(table_1)
-
+chart.Correlation(total_2, histogram=TRUE, pch=19)
 
 #What do I want to explore?
 
@@ -85,3 +87,5 @@ glimpse(aug)
 aug %>%
   summarize(var_y = var(charitable_contribution_count), var_e = var(.resid)) %>%
   mutate(R_squared = 1 -(var_e / var_y))
+
+
