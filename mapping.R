@@ -146,18 +146,44 @@ View(tn_core)
 
 #merging IRS data with map data 
 
-merged <- rename(merged, c("county"="subregion"))
-merged <- merged %>% mutate(subregion = tolower(subregion))
-merged$subregion <- gsub(" county$", "", merged$subregion)
-tn_irs <- inner_join(tn_counties, merged, by = "subregion")
+View(merged_all)
+
+merged_all <- rename(merged_all, c("county"="subregion"))
+merged_all <- merged_all %>% mutate(subregion = tolower(subregion))
+merged_all$subregion <- gsub(" county$", "", merged_all$subregion)
+tn_irs <- inner_join(tn_counties, merged_all, by = "subregion")
+
+View(tn_irs)
 
 tn_agi <- tn_base + 
   geom_polygon(data = tn_irs, aes(fill = agi_amt_avg), color = "white") +
   geom_polygon(color = "black", fill = NA) +
   theme_bw() +
-  ditch_the_axes + 
-  scale_fill_gradientn(colours = rev(rainbow(7)),
-                       breaks = c(50, 100, 150, 200))
+  ditch_the_axes
+  
+tn_agi
+
+tn_IRA <- tn_base + 
+  geom_polygon(data = tn_irs, aes(fill = taxable_IRA_dist_amt), color = "white") +
+  geom_polygon(color = "black", fill = NA) +
+  theme_bw() +
+  ditch_the_axes
+
+tn_IRA
+
+tn_agi <- tn_base + 
+  geom_polygon(data = tn_irs, aes(fill = agi_amt_avg), color = "white") +
+  geom_polygon(color = "black", fill = NA) +
+  theme_bw() +
+  ditch_the_axes
+
+tn_agi
+
+tn_agi <- tn_base + 
+  geom_polygon(data = tn_irs, aes(fill = agi_amt_avg), color = "white") +
+  geom_polygon(color = "black", fill = NA) +
+  theme_bw() +
+  ditch_the_axes
 
 tn_agi
 

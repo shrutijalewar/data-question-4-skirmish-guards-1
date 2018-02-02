@@ -18,6 +18,8 @@ tn_2014 <- read.csv("data/irs_2014.csv")
 tn_2015 <- read.csv("data/irs_2015.csv")
 core <- read.csv("data/education_data.csv")
 
+View(core)
+
 #rowbinding all the irs data together
 
 tn_irs <- rbind(tn_2011, tn_2012, tn_2013, tn_2014, tn_2015)
@@ -27,18 +29,20 @@ tn_irs <- rbind(tn_2011, tn_2012, tn_2013, tn_2014, tn_2015)
 tn_irs_total <- tn_irs %>% 
   filter(agi_range == 'Total')
 
+View(tn_irs_total)
+
 #merging core data with irs data - first need to make both zip_code columns are of the same type and column name
 
-colnames(core)[colnames(core) == 'zip'] <- 'zip_code'
-core$zip_code <- as.numeric(core$zip_code)
+colnames(merged_county)[colnames(merged_county) == 'zip'] <- 'zip_code'
+merged_county$zip_code <- as.numeric(merged_county$zip_code)
 tn_irs_total$zip_code <- as.numeric(tn_irs_total$zip_code)
 
-merged <- tn_irs_total %>% 
-  inner_join(core, by = 'zip_code')
+merged_all <- tn_irs_total %>% 
+  inner_join(merged_county, by = 'zip_code')
 
-View(merged)
+View(merged_all)
 
-write.csv(merged, "merged.csv")
+write.csv(merged_all, "merged_all.csv")
 
 #Starting at a birds-eye view of total correlation
 #subsetting the df to take a closer look at specific correlation

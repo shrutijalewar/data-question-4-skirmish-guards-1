@@ -50,27 +50,23 @@ tn_counties <- subset(counties, region == "tennessee")
 * Organized zipcodes by county [Zip Codes](https://www.unitedstateszipcodes.org/zip-code-database/).
 *  Aggregated tax infomration organized by zipcode [2011 - 2015 IRS Data](https://www.irs.gov/statistics/soi-tax-stats-individual-income-tax-statistics-zip-code-data-soi).
 
+### Brief History of Public Education in TN
 
-### Correlation Matrix of Averaged IRS Data
+* The state's fisrt constitution (1796) did not mention education as an appropriation of public funds.
+* The offical recognition of public education came in 1806 within the federal Cession Act, requiring the state to furnish land for two colleges and an academy in each of the 27 existing counties within the state at the time.
+* State general assembly statues throughout 1815-1830's proved to be ineffective due to lack of funding.  County boards were independent and uncompensated.
+* 1835 state constitution included a education provision, installing a superintendent.
+* 1867 Reconstruction intiatives revive resources to be dedicated to education.
+* General Education ACt of 1909 - 25% of state gross revenue to be utilized by the counties for public schools.
+* 1954 Brown vs Board of Education and resulting desegregation in the years to come.
+* 2002 Tennessee Education Lottery ($10.8 million in sales on the first day)
+* Common Core Initiative was adopted in 2010 and implemented in 2013. 
 
-```{r echo=FALSE, fig.width=15, fig.height=15}
+![TN State Expenditure by Type 2013](data/Tennessee_expenditures_by_type_2013.png)
 
-ggcorr(irs)
+![Top 2017 High School Rankings](data/rankings.png)
+![Tennesse 2017 High School Ranking](data/TN_ranking.png)
 
-
-```
-
-### Correlation Matrix of CORE Education Data
-
-```{r warning=FALSE, message=FALSE, echo=FALSE, fig.width=15, fig.height=15}
-
-edu_2 <- dplyr::select(edu_raw, system_name,BioI,Chemistry,ELA,EngI,EngII,EngIII,AlgI,AlgII,Math,Science,ACT_Composite,Graduation,Pct_Native_American,Pct_SWD,
-                Pct_Black,Pct_Hispanic,Pct_EL,Pct_ED,Pct_BHN,Pct_Chronically_Absent,
-                Pct_Suspended,Pct_Expelled,Per_Pupil_Expenditures,Enrollment
-)
-ggcorr(edu_2)
-
-```
 
 ```{r echo=FALSE, fig.width=15, fig.height=15}
 # data prep for act score for education
@@ -106,6 +102,28 @@ ggplot(total_sal_2014, aes(x=county, y=sal_avg_z, label=sal_avg_z)) +
    labs(subtitle='Divering Bar Plot',
         title= 'Normalised Average Salary for Counties') +
    coord_flip()
+```
+
+
+### Correlation Matrix of Averaged IRS Data
+
+```{r echo=FALSE, fig.width=15, fig.height=15}
+
+ggcorr(irs)
+
+
+```
+
+### Correlation Matrix of CORE Education Data
+
+```{r warning=FALSE, message=FALSE, echo=FALSE, fig.width=15, fig.height=15}
+
+edu_2 <- dplyr::select(edu_raw, system_name,BioI,Chemistry,ELA,EngI,EngII,EngIII,AlgI,AlgII,Math,Science,ACT_Composite,Graduation,Pct_Native_American,Pct_SWD,
+                Pct_Black,Pct_Hispanic,Pct_EL,Pct_ED,Pct_BHN,Pct_Chronically_Absent,
+                Pct_Suspended,Pct_Expelled,Per_Pupil_Expenditures,Enrollment
+)
+ggcorr(edu_2)
+
 ```
 
 ```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
