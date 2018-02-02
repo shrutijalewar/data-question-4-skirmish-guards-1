@@ -8,9 +8,7 @@ output:
     highlight: tango
 ---
 
-### Intro: R Packages Utilized
-
-```{r, message = FALSE, warning = FALSE}
+```{r, message = FALSE, warning = FALSE, echo=FALSE}
 library("tidyverse")
 library("readxl")
 library("dplyr")
@@ -30,21 +28,32 @@ library("rgdal")
 library("sf")
 library("broom")
 library("stringr")
+
+#Reading in all files for the analysis 
+
+irs <- read.csv("data/irs_avg.csv")
+edu_raw <- read.csv("data/achievement_profile_data_with_CORE.csv")
+merged_irs <- read.csv("data/merged.csv")
+edu_act <- read.csv("data/edu_act.csv")
+total_sal_2014 <- read.csv("data/total_sal_2014.csv")
+usa <- map_data("usa")
+states <- map_data("state")
+tn_df <- subset(states, region == "tennessee")
+counties <- map_data("county")
+tn_counties <- subset(counties, region == "tennessee")
+
 ```
 
 ### Where did the data come from? 
 
-* Academic, demographic, and disciplinary education data gathered from [the 2014 - 2015 TN.gov] (https://www.tn.gov/education/data/data-downloads.html)
-* [Zip Codes] (https://www.unitedstateszipcodes.org/zip-code-database/)
-* Organizes zipcodes by county. 
-* [2011 - 2015 IRS Data] (https://www.irs.gov/statistics/soi-tax-stats-individual-income-tax-statistics-zip-code-data-soi)
-* Aggregated tax infomration organized by zipcode. 
+* Academic, demographic, and disciplinary education data gathered from [the 2014 - 2015 TN.gov](https://www.tn.gov/education/data/data-downloads.html).
+* Organized zipcodes by county [Zip Codes](https://www.unitedstateszipcodes.org/zip-code-database/).
+*  Aggregated tax infomration organized by zipcode [2011 - 2015 IRS Data](https://www.irs.gov/statistics/soi-tax-stats-individual-income-tax-statistics-zip-code-data-soi).
 
 
 ### Correlation Matrix of Averaged IRS Data
 
-```{r}
-irs <- read.csv("data/irs_avg.csv")
+```{r echo=FALSE}
 
 ggcorr(irs)
 
@@ -53,9 +62,7 @@ ggcorr(irs)
 
 ### Correlation Matrix of CORE Education Data
 
-```{r warning=FALSE, message=FALSE}
-edu_raw <- read.csv("data/achievement_profile_data_with_CORE.csv")
-View(edu_raw)
+```{r warning=FALSE, message=FALSE, echo=FALSE}
 
 edu_2 <- dplyr::select(edu_raw, system_name,BioI,Chemistry,ELA,EngI,EngII,EngIII,AlgI,AlgII,Math,Science,ACT_Composite,Graduation,Pct_Native_American,Pct_SWD,
                 Pct_Black,Pct_Hispanic,Pct_EL,Pct_ED,Pct_BHN,Pct_Chronically_Absent,
@@ -65,19 +72,51 @@ ggcorr(edu_2)
 
 ```
 
-### Average Science 
+```{r echo=FALSE, fig.width=15, fig.height=10}
+# data prep for act score for education
+edu_act$ACT_Composite_avg <- round((edu_act$ACT_Composite - mean(edu_act$ACT_Composite,na.rm=TRUE))/sd(edu_act$ACT_Composite,na.rm=TRUE), 2)  # compute normalized act scores
+edu_act$act_comp_type <- ifelse(edu_act$ACT_Composite_avg < 0, 'below', 'above')  # above / below avg flag
+edu_act <- edu_act[order(edu_act$ACT_Composite_avg), ]  # sort
+edu_act$county <- factor(edu_act$county, levels = edu_act$county)  # convert to factor to retain sorted order in plot.
 
-```{r}
-usa <- map_data("usa")
-states <- map_data("state")
-tn_df <- subset(states, region == "tennessee")
-counties <- map_data("county")
-tn_counties <- subset(counties, region == "tennessee")
+# Diverging Barcharts for avg act scores
+ggplot(edu_act, aes(x=county, y=ACT_Composite_avg, label= 'ACT Scores')) +
+   geom_bar(stat='identity', aes(fill=act_comp_type), width=.5)  +
+   scale_fill_manual(name= 'ACT Composite',
+                     labels = c('Above Average', 'Below Average'),
+                     values = c('above'='#00ba38', 'below'='#f8766d')) +
+   labs(subtitle='Diverging Bars Plot',
+        title= 'Normalised ACT scores for Counties') +
+   coord_flip()
+```
 
+```{r echo=FALSE, fig.width=15, fig.height=10}
+total_sal_2014$sal_avg_z <- round((total_sal_2014$salary_avg - mean(total_sal_2014$salary_avg,na.rm=TRUE))/sd(total_sal_2014$salary_avg,na.rm=TRUE), 2)  # compute normalized mpg
+total_sal_2014$sal_type <- ifelse(total_sal_2014$sal_avg_z < 0, 'below', 'above')  # above / below avg flag
+total_sal_2014 <- total_sal_2014[order(total_sal_2014$sal_avg_z), ]  # sort
+total_sal_2014$county <- factor(total_sal_2014$county, levels = total_sal_2014$county)  # convert to factor to retain sorted order in plot.
+
+# Diverging Barcharts
+
+ggplot(total_sal_2014, aes(x=county, y=sal_avg_z, label=sal_avg_z)) +
+   geom_bar(stat='identity', aes(fill=sal_type), width=.5)  +
+   scale_fill_manual(name='Average Salary',
+                     labels = c('Above Average', 'Below Average'),
+                     values = c('above'='#00ba38', 'below'='#f8766d')) +
+   labs(subtitle='Divering Bar Plot',
+        title= 'Normalised Average Salary for Counties') +
+   coord_flip()
+```
+
+```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
 tn_base <- ggplot(data = tn_df, mapping = aes(x = long, y = lat, group = group)) + 
   coord_fixed(1.3) + 
   geom_polygon(color = "black", fill = "gray")
-tn_base + theme_nothing()
+```
+
+### Per Pupil Expenditure
+
+```{r echo=FALSE, fig.width=25, fig.height=10}
 
 #I need to be able to merge these two to create the ggmap
 
@@ -88,6 +127,7 @@ core[[2]] <- tolower(core[[2]]) #changing to all lowercase
 #removing 'county' from the column
 
 core$subregion <- gsub(" county$", "", core$subregion)
+tn_counties$subregion <- replace(tn_counties$subregion, tn_counties$subregion=="de kalb", "dekalb")
 
 #merging the two dataframes together with nnner_join
 
@@ -113,39 +153,63 @@ tn_per_pupil <- tn_base +
 tn_per_pupil
 ```
 
+### Percentage of Black, Hispanic, and Native American 
 
-```{r}
-tn_eng <- tn_base + 
-  geom_polygon(data = tn_core, aes(fill = avg_Eng), color = "white") +
-  geom_polygon(color = "black", fill = NA) +
-  theme_bw() +
-  scale_fill_gradientn(colours = rev(rainbow(7)),
-                       breaks = c(50, 65, 75, 85, 95, 100)) +
-  ditch_the_axes
-
-tn_eng
-```
-
-```{r}
-tn_math <- tn_base + 
-  geom_polygon(data = tn_core, aes(fill = avg_Math), color = "white") +
-  geom_polygon(color = "black", fill = NA) +
-  theme_bw() +
-  scale_fill_gradientn(colours = rev(rainbow(7)),
-                       breaks = c(50, 65, 75, 85, 95, 100)) +
-  ditch_the_axes
-
-tn_math
-```
-
-```{r}
-tn_per_pupil <- tn_base + 
-  geom_polygon(data = tn_core, aes(fill = Per_Pupil_Expenditures), color = "white") +
+```{r echo=FALSE, fig.width=25, fig.height=10}
+tn_per_BHN <- tn_base + 
+  geom_polygon(data = tn_core, aes(fill = Pct_BHN), color = "white") +
   geom_polygon(color = "black", fill = NA) +
   theme_bw() +
   ditch_the_axes
 
-tn_per_pupil
+tn_per_BHN
 ```
 
+### Graduation Rate
 
+```{r echo=FALSE, fig.width=25, fig.height=25}
+tn_graduation <- tn_base + 
+  geom_polygon(data = tn_core, aes(fill = Graduation), color = "white") +
+  geom_polygon(color = "black", fill = NA) +
+  theme_bw() +
+  ditch_the_axes
+
+tn_graduation
+```
+
+### Dropout Rate
+
+```{r echo=FALSE, fig.width=25, fig.height=10}
+tn_dropout <- tn_base + 
+  geom_polygon(data = tn_core, aes(fill = Dropout), color = "white") +
+  geom_polygon(color = "black", fill = NA) +
+  theme_bw() +
+  ditch_the_axes
+
+tn_dropout
+```
+
+### Model Prediction of Core Scores Effect on ACT Score 
+
+```{r fig.width=15, fig.height=15}
+
+lm(formula = ACT_Composite ~  avg_Eng + avg_Math + avg_Sci + Dropout + Pct_Suspended,  data = merged_irs)
+          model_multi <- lm(formula = ACT_Composite ~  avg_Eng + avg_Math + avg_Sci, data = merged_irs)
+          plot(model_multi)
+          summary(model_multi)
+        
+           
+         
+          # use model to predict the results
+          test_model <- data.frame(avg_Eng = 80, avg_Math = 80,  avg_Sci = 80)
+          test_model2 <- data.frame(avg_Eng = 90, avg_Math = 90,  avg_Sci = 90)
+          test_model3 <- data.frame(avg_Eng = 60, avg_Math = 50,  avg_Sci = 60)
+          #test_counts <- model_multi$agi_amt_avg
+         
+          predict(model_multi, test_model)
+          predict(model_multi, test_model2)
+          predict(model_multi, test_model3)
+
+```
+
+$$ACT_Composite = 12.114030 + 0.095159 * avg_Eng + 0.010742 * avg_Math + 0.016612 * avg_Sci$$

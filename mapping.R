@@ -140,6 +140,8 @@ tn_dropout <- tn_base +
 
 tn_dropout
 
+View(tn_core)
+
 
 #merging IRS data with map data 
 

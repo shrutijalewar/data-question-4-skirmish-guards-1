@@ -38,6 +38,8 @@ merged <- tn_irs_total %>%
 
 View(merged)
 
+write.csv(merged, "merged.csv")
+
 #Starting at a birds-eye view of total correlation
 #subsetting the df to take a closer look at specific correlation
 
