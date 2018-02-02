@@ -205,11 +205,36 @@ irs_charity <- select(irs_total_avg, zip_code, year, salary_avg, taxable_interes
                                           balance_due_avg, refund_avg ) %>%
     filter(zip_code %in% c(37402, 37201, 38103,37350, 37203)) #%>% View()
 ggcorr(irs_charity)
-plot( irs_charity$year,irs_charity$salary_avg)
+plot( as.factor(irs_charity$year),irs_charity$salary_avg)
 plot( irs_charity$year,irs_charity$item_deduction_avg)
-
+plot(irs_business_income$year,irs_business_income$taxable_income_avg)
 ggcorr(irs_total_avg)
 
+hist(irs_salary_avg$salary_avg)
+hist(irs_total_avg$salary_avg)
+hist(irs_earned_income_credit$salary_avg)
 
 write_csv( irs_total_avg, 'irs_total_avg.csv')
 
+theme_set(theme_bw())
+
+# Data Prep
+ # mean(irs_total_avg$salary_avg,na.rm=TRUE) %>% View()
+total %>%  select(county,salary_avg) %>%  filter(year == '2014') %>% group_by(county) %>% View()
+
+total$sal_avg_z <- round((total$salary_avg - mean(total$salary_avg,na.rm=TRUE))/sd(total$salary_avg,na.rm=TRUE), 2)  # compute normalized mpg
+total$sal_type <- ifelse(total$sal_avg_z < 0, "below", "above")  # above / below avg flag
+total <- total[order(total$sal_avg_z), ]  # sort
+total$county <- factor(total$county, levels = total$county)  # convert to factor to retain sorted order in plot.
+
+View(total)
+# Diverging Barcharts
+
+ggplot(total_2014, aes(x=county, y=sal_avg_z, label=sal_avg_z)) +
+    geom_bar(stat='identity', aes(fill=sal_type), width=.5)  +
+    scale_fill_manual(name="Average Salary",
+                      labels = c("Above Average", "Below Average"),
+                      values = c("above"="#00ba38", "below"="#f8766d")) +
+    labs(subtitle="Normalised Average Salary for Counties",
+         title= "Diverging Bars") +
+    coord_flip()
