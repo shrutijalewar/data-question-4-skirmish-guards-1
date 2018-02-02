@@ -1,12 +1,11 @@
 library("tidyverse")
+library("dplyr")
 library("readxl")
 
 #Importing the zip code and core dataframes.  
 
 core <- read_csv("data/achievement_profile_data_with_CORE.csv")
 zips <- read_excel("data/zip_code_database.xlsx")
-View(core)
-View(zips)
 
 #Fist I need to isolate only the TN zipcodes within zips. 
 
@@ -16,27 +15,31 @@ TN_zips <- zips %>%
 #Removing unnecessary columns from zips. 
 
 TN_zips <- TN_zips[-c(2, 3, 5, 6, 9:12)]
-View(TN_zips)
 
 #Removing the system column, and adding aggregate columns for each discipline.
 
 core <- core[-c(1)]
 colnames(core)[1] <- 'county'
-core <- core %>%
-  rowwise() %>%
+core$county <- gsub("Jackson-Madison County", "Madison County", core$county)
+core$county <- gsub("Gibson County Special School District", "Gibson County", core$county)
+core$county <- gsub("South Carroll Special School District", "Carroll County", core$county)
+
+View(core)
+View(TN_zips)
+
+core_1 <- core %>%
+  rowwise() %>% 
   mutate(avg_Math = mean(c(Math, AlgI, AlgII), na.rm = TRUE),
          avg_Eng = mean(c(ELA, EngI, EngII, EngIII), na.rm = TRUE),
          avg_Sci = mean(c(Science, BioI, Chemistry), na.rm = TRUE))
 
+View(core_1)
 #Merging via county and rearranging the colnames to display the zip's and county's in th first two columns.  
 
 merged_county <- core %>% 
   inner_join(TN_zips, by = 'county') 
 
-merged_county <- select(merged_county, zip, county, avg_Math, avg_Eng, avg_Sci, everything())
 View(merged_county)
-
-write.csv(merged_county, "education_data.csv")
 
 #I want to find the top and bottom 5 counties when it comes to graduation rates.  
 

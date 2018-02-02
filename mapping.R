@@ -1,40 +1,23 @@
-install.packages(c("ggplot2", "devtools", "stringr"))
-install.packages(c("maps", "mapdata"))
-install.packages("ggmap")
-install.packages("dplyr")
-library(dplyr)
-library(plyr)
-library(ggplot2)
-library(ggmap)
-library(maps)
-library(mapdata)
-library(rgeos)
-library(maptools)
-library(sp)
-library(raster)
-library(rgdal)
-library(sf)
-library(broom)
-library(stringr)
-
-
 setwd("C:/Users/Carmijh0/Desktop/GIT/Q4/data-question-4-skirmish-guards-1")
-tn <- readShapeSpatial("data/TN_counties.shp")
-plot(tn)
 
-View(tn)
+library("dplyr")
+library("plyr")
+library("ggplot2")
+library("ggmap")
+library("maps")
+library("mapdata")
+library("rgeos")
+library("maptools")
+library("sp")
+library("raster")
+library("rgdal")
+library("sf")
+library("broom")
+library("stringr")
 
-tn_df <- tidy(tn)
-View(tn_df)
+-------------------------------------------------------------------------------------------------------
 
-tn <- fortify(tn)
-View(merged_county)
-
-ggplot() + geom_polygon(data = tn, aes(x = long, y = lat, group = group), 
-                    map = tn) + expand_limits(x = tn$long, y = tn$lat)
-
-------------------------------------------------------------------------------------------------
-
+#USING GGPLOT2 mapping to explore data
 
 usa <- map_data("usa")
 ggplot() + geom_polygon(data = usa, aes(x=long, y = lat, group = group)) + 
@@ -56,7 +39,6 @@ ggplot() + geom_polygon(data = tn_counties, aes(x=long, y = lat, group = group))
 
 counties <- map_data("county")
 tn_counties <- subset(counties, region == "tennessee")
-View(tn_counties)
 
 tn_base + theme_nothing() + 
   geom_polygon(data = tn_counties, fill = NA, color = "white") +
@@ -64,21 +46,23 @@ tn_base + theme_nothing() +
 
 #I need to be able to merge these two to create the ggmap
 
-core <- merged_county
-colnames(core)[2] <- "subregion" #renaming to match
-core[[2]] <- tolower(core[[2]]) #changing to all lowercase
-View(core)
+View(merged_county)
+core_raw <- merged_county
+colnames(core_raw)[1] <- "subregion" #renaming to match
+core_raw[[1]] <- tolower(core_raw[[1]]) #changing to all lowercase
 
-#removing 'county' from the column
+#removing 'county' from the column and tidying for merge
 
-str_detect(core$subregion, "[:space:].")
-grep(" county$", core$subregion, value = TRUE)
-core$subregion <- gsub(" county$", "", core$subregion)
-View(core)
+core_raw$subregion <- gsub(" county$", "", core_raw$subregion)
+tn_counties$subregion <- replace(tn_counties$subregion, tn_counties$subregion=="de kalb", "dekalb")
+
+View(tn_counties)
+View(core_raw)
 
 #merging the two dataframes together with nnner_join
 
-tn_core <- inner_join(tn_counties, core, by = "subregion")
+tn_core <- inner_join(tn_counties, core_raw, by = "subregion")
+
 View(tn_core)
 
 #Attempting to plot
@@ -92,15 +76,88 @@ ditch_the_axes <- theme(
   axis.title = element_blank()
 )
 
-tn_1 <- tn_base + 
+tn_sci <- tn_base + 
+  geom_polygon(data = tn_core, aes(fill = avg_Sci), color = "white") +
+  geom_polygon(color = "black", fill = NA) +
+  theme_bw() +
+  ditch_the_axes
+
+tn_sci
+
+tn_eng <- tn_base + 
+  geom_polygon(data = tn_core, aes(fill = avg_Eng), color = "white") +
+  geom_polygon(color = "black", fill = NA) +
+  theme_bw() +
+  ditch_the_axes
+
+tn_eng
+
+tn_math <- tn_base + 
+  geom_polygon(data = tn_core, aes(fill = avg_Math), color = "white") +
+  geom_polygon(color = "black", fill = NA) +
+  theme_bw() +
+  ditch_the_axes
+
+tn_math
+
+tn_per_pupil <- tn_base + 
+  geom_polygon(data = tn_core, aes(fill = Per_Pupil_Expenditures), color = "white") +
+  geom_polygon(color = "black", fill = NA) +
+  theme_bw() +
+  ditch_the_axes
+
+tn_per_pupil
+
+tn_per_BHN <- tn_base + 
+  geom_polygon(data = tn_core, aes(fill = Pct_BHN), color = "white") +
+  geom_polygon(color = "black", fill = NA) +
+  theme_bw() +
+  ditch_the_axes
+
+tn_per_BHN
+
+tn_act <- tn_base + 
+  geom_polygon(data = tn_core, aes(fill = ACT_Composite), color = "white") +
+  geom_polygon(color = "black", fill = NA) +
+  theme_bw() +
+  ditch_the_axes
+
+tn_act
+
+tn_graduation <- tn_base + 
   geom_polygon(data = tn_core, aes(fill = Graduation), color = "white") +
   geom_polygon(color = "black", fill = NA) +
   theme_bw() +
   ditch_the_axes
 
-tn_1 <- tn_1 + 
-  scale_fill_gradientn(colours = rev(rainbow(7)),
-                       breaks = c(50, 65, 75, 85, 95, 100))
-                    
+tn_graduation
 
-tn_1
+tn_dropout <- tn_base + 
+  geom_polygon(data = tn_core, aes(fill = Dropout), color = "white") +
+  geom_polygon(color = "black", fill = NA) +
+  theme_bw() +
+  ditch_the_axes
+
+tn_dropout
+
+
+#merging IRS data with map data 
+
+
+irs <- merged
+irs <- rename(irs, c("county"="subregion"))
+irs<- irs %>% mutate(subregion = tolower(subregion))
+irs$subregion <- gsub(" county$", "", irs$subregion)
+tn_irs <- inner_join(tn_counties, irs, by = "subregion")
+
+tn_agi <- tn_base + 
+  geom_polygon(data = tn_irs, aes(fill = agi_amt_avg), color = "white") +
+  geom_polygon(color = "black", fill = NA) +
+  theme_bw() +
+  ditch_the_axes + 
+  scale_fill_gradientn(colours = rev(rainbow(7)),
+                       breaks = c(50, 100, 150, 200))
+
+tn_agi
+
+
