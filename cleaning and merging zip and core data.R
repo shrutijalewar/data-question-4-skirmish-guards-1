@@ -27,13 +27,13 @@ core$county <- gsub("South Carroll Special School District", "Carroll County", c
 View(core)
 View(TN_zips)
 
-core_1 <- core %>%
+core <- core %>%
   rowwise() %>% 
   mutate(avg_Math = mean(c(Math, AlgI, AlgII), na.rm = TRUE),
          avg_Eng = mean(c(ELA, EngI, EngII, EngIII), na.rm = TRUE),
          avg_Sci = mean(c(Science, BioI, Chemistry), na.rm = TRUE))
 
-View(core_1)
+View(core)
 #Merging via county and rearranging the colnames to display the zip's and county's in th first two columns.  
 
 merged_county <- core %>% 

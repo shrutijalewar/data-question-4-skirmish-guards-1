@@ -64,6 +64,7 @@ View(core_raw)
 tn_core <- inner_join(tn_counties, core_raw, by = "subregion")
 
 View(tn_core)
+View(merged)
 
 #Attempting to plot
 
@@ -77,7 +78,7 @@ ditch_the_axes <- theme(
 )
 
 tn_sci <- tn_base + 
-  geom_polygon(data = tn_core, aes(fill = avg_Sci), color = "white") +
+  geom_polygon(data = tn_irs, aes(fill = avg_Sci), color = "white") +
   geom_polygon(color = "black", fill = NA) +
   theme_bw() +
   ditch_the_axes
@@ -85,7 +86,7 @@ tn_sci <- tn_base +
 tn_sci
 
 tn_eng <- tn_base + 
-  geom_polygon(data = tn_core, aes(fill = avg_Eng), color = "white") +
+  geom_polygon(data = merged, aes(fill = avg_Eng), color = "white") +
   geom_polygon(color = "black", fill = NA) +
   theme_bw() +
   ditch_the_axes
@@ -93,7 +94,7 @@ tn_eng <- tn_base +
 tn_eng
 
 tn_math <- tn_base + 
-  geom_polygon(data = tn_core, aes(fill = avg_Math), color = "white") +
+  geom_polygon(data = merged, aes(fill = avg_Math), color = "white") +
   geom_polygon(color = "black", fill = NA) +
   theme_bw() +
   ditch_the_axes
@@ -145,12 +146,10 @@ View(tn_core)
 
 #merging IRS data with map data 
 
-
-irs <- merged
-irs <- rename(irs, c("county"="subregion"))
-irs<- irs %>% mutate(subregion = tolower(subregion))
-irs$subregion <- gsub(" county$", "", irs$subregion)
-tn_irs <- inner_join(tn_counties, irs, by = "subregion")
+merged <- rename(merged, c("county"="subregion"))
+merged <- merged %>% mutate(subregion = tolower(subregion))
+merged$subregion <- gsub(" county$", "", merged$subregion)
+tn_irs <- inner_join(tn_counties, merged, by = "subregion")
 
 tn_agi <- tn_base + 
   geom_polygon(data = tn_irs, aes(fill = agi_amt_avg), color = "white") +

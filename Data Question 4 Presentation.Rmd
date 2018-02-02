@@ -53,7 +53,7 @@ tn_counties <- subset(counties, region == "tennessee")
 
 ### Correlation Matrix of Averaged IRS Data
 
-```{r echo=FALSE}
+```{r echo=FALSE, fig.width=15, fig.height=15}
 
 ggcorr(irs)
 
@@ -62,7 +62,7 @@ ggcorr(irs)
 
 ### Correlation Matrix of CORE Education Data
 
-```{r warning=FALSE, message=FALSE, echo=FALSE}
+```{r warning=FALSE, message=FALSE, echo=FALSE, fig.width=15, fig.height=15}
 
 edu_2 <- dplyr::select(edu_raw, system_name,BioI,Chemistry,ELA,EngI,EngII,EngIII,AlgI,AlgII,Math,Science,ACT_Composite,Graduation,Pct_Native_American,Pct_SWD,
                 Pct_Black,Pct_Hispanic,Pct_EL,Pct_ED,Pct_BHN,Pct_Chronically_Absent,
@@ -72,7 +72,7 @@ ggcorr(edu_2)
 
 ```
 
-```{r echo=FALSE, fig.width=15, fig.height=10}
+```{r echo=FALSE, fig.width=15, fig.height=15}
 # data prep for act score for education
 edu_act$ACT_Composite_avg <- round((edu_act$ACT_Composite - mean(edu_act$ACT_Composite,na.rm=TRUE))/sd(edu_act$ACT_Composite,na.rm=TRUE), 2)  # compute normalized act scores
 edu_act$act_comp_type <- ifelse(edu_act$ACT_Composite_avg < 0, 'below', 'above')  # above / below avg flag
@@ -90,7 +90,7 @@ ggplot(edu_act, aes(x=county, y=ACT_Composite_avg, label= 'ACT Scores')) +
    coord_flip()
 ```
 
-```{r echo=FALSE, fig.width=15, fig.height=10}
+```{r echo=FALSE, fig.width=15, fig.height=15}
 total_sal_2014$sal_avg_z <- round((total_sal_2014$salary_avg - mean(total_sal_2014$salary_avg,na.rm=TRUE))/sd(total_sal_2014$salary_avg,na.rm=TRUE), 2)  # compute normalized mpg
 total_sal_2014$sal_type <- ifelse(total_sal_2014$sal_avg_z < 0, 'below', 'above')  # above / below avg flag
 total_sal_2014 <- total_sal_2014[order(total_sal_2014$sal_avg_z), ]  # sort
@@ -167,7 +167,7 @@ tn_per_BHN
 
 ### Graduation Rate
 
-```{r echo=FALSE, fig.width=25, fig.height=25}
+```{r echo=FALSE, fig.width=25, fig.height=10}
 tn_graduation <- tn_base + 
   geom_polygon(data = tn_core, aes(fill = Graduation), color = "white") +
   geom_polygon(color = "black", fill = NA) +
