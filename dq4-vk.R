@@ -313,7 +313,7 @@ library(psych) #install.packages("psych")
          merged_irs <- inner_join(irs_2014, merged_county, by=c('zip_code' = 'zip_code'))
          #merged_irs <- irs_2014 %>% 
          #  inner_join(merged_county, by = 'zip_code') 
-         #View(merged_irs)
+         View(merged_irs)
          
          summary(merged_irs)
          
@@ -339,16 +339,91 @@ library(psych) #install.packages("psych")
            total_2 <- select(merged_irs, year, agi_amt_avg,salary_avg,mortgage_amt_avg,
                              prop_tax_avg,taxable_income_avg,
                              earned_income_credit_avg,
-                             excess_eaned_income_credit_avg,avg_Eng, avg_Sci, 
+                             excess_eaned_income_credit_avg, avg_Eng, avg_Sci, 
                              avg_Math, Pct_Expelled, Pct_BHN,
                              Pct_Suspended, ACT_Composite,earned_income_credit_avg, 
-                             Pct_ED,Pct_SWD
+                             Pct_ED,Pct_SWD, Enrollment, Graduation, Dropout, county
            )
            
-           #View(total_2)
+          View(total_2)
            
            #total_2[taxable_income_amt] = as.numeric(taxable_income_amt)
            str(total_2)
+           
+           
+           #  multivariable regression model  for agi #
+           model_multi <- lm(formula = agi_amt_avg ~ Enrollment + Graduation + Dropout + Pct_BHN, data = total_2)
+           plot(model_multi)
+           summary(model_multi)
+           
+           model_multi <- lm(formula = agi_amt_avg ~  Graduation + Dropout + Pct_BHN, data = total_2)
+           plot(model_multi)
+           summary(model_multi)
+           
+           # use model to predict the results
+           test_model <- data.frame(Graduation = 80,  Dropout = 10, Pct_BHN = 30)
+           
+           #test_counts <- model_multi$agi_amt_avg
+           
+           predict(model_multi, test_model)
+           
+           lm(formula = ACT_Composite ~  avg_Eng + avg_Math + avg_Sci + Dropout + Pct_Suspended,  data = total_2)
+           model_multi <- lm(formula = ACT_Composite ~  avg_Eng + avg_Math + avg_Sci, data = total_2)
+           plot(model_multi)
+           summary(model_multi)
+           
+           Coefficients:
+             Estimate Std. Error t value Pr(>|t|)    
+           (Intercept) 12.114030   0.083757 144.633  < 2e-16 ***
+             avg_Eng      0.095159   0.003889  24.470  < 2e-16 ***
+             avg_Math     0.010742   0.001466   7.325 2.88e-13 ***
+             avg_Sci      0.016612   0.002811   5.910 3.72e-09 ***
+             
+             # Equation of the model, ignoring the residual error component
+             #ACT_Composite = 12.114030 + 0.095159 * avg_Eng + 0.010742 * avg_Math + 0.016612 * avg_Sci
+             
+           
+           
+           # use model to predict the results
+           test_model <- data.frame(avg_Eng = 80, avg_Math = 80,  avg_Sci = 80)
+           test_model2 <- data.frame(avg_Eng = 90, avg_Math = 90,  avg_Sci = 90)
+           test_model3 <- data.frame(avg_Eng = 60, avg_Math = 50,  avg_Sci = 60)
+           #test_counts <- model_multi$agi_amt_avg
+           
+           predict(model_multi, test_model)
+           predict(model_multi, test_model2)
+           predict(model_multi, test_model3)
+           
+           # use model to predict the results - Test the effect of Math Vs Science
+           test_model <- data.frame(avg_Eng = 80, avg_Math = 80,  avg_Sci = 80)
+           test_model2 <- data.frame(avg_Eng = 80, avg_Math = 90,  avg_Sci = 80)
+           test_model3 <- data.frame(avg_Eng = 90, avg_Math = 80,  avg_Sci = 80)
+           test_model4 <- data.frame(avg_Eng = 80, avg_Math = 80,  avg_Sci = 90)
+           #test_counts <- model_multi$agi_amt_avg
+           
+           predict(model_multi, test_model)
+           predict(model_multi, test_model2)
+           predict(model_multi, test_model3)
+           predict(model_multi, test_model4)
+           
+           #plot(p - test_counts)
+           
+           # Is English better predictor of ACT score??
+           model_multi <- lm(formula = ACT_Composite ~  avg_Eng + avg_Sci , data = total_2)
+           plot(model_multi)
+           summary(model_multi)
+           
+           # use model to predict the results
+           test_model <- data.frame(avg_Eng = 80, avg_Sci = 80)
+           test_model2 <- data.frame(avg_Eng = 90, avg_Sci = 80)
+           test_model3 <- data.frame(avg_Eng = 80, avg_Sci = 90)
+           #test_counts <- model_multi$agi_amt_avg
+           
+           predict(model_multi, test_model)
+           predict(model_multi, test_model2)
+           predict(model_multi, test_model3)
+           
+           
            
            chart.Correlation(total_2, histogram=TRUE, pch=19)
            
