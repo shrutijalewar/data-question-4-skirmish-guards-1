@@ -31,6 +31,8 @@ glimpse(edu_2014)
 # filtering to only total values per zip code to combine with education data.
 total_irs <- filter(total_irs, agi_range == 'Total')
 View(total_irs)
+glimpse(total_irs)
+glimpse(edu_2014)
 edu_2014$zip_code <- edu_2014$zip
 # Merge the edu and irs together
 total <- merge(total_irs,edu_2014,by="zip_code")
@@ -219,22 +221,53 @@ write_csv( irs_total_avg, 'irs_total_avg.csv')
 theme_set(theme_bw())
 
 # Data Prep
- # mean(irs_total_avg$salary_avg,na.rm=TRUE) %>% View()
-total %>%  select(county,salary_avg) %>%  filter(year == '2014') %>% group_by(county) %>% View()
 
-total$sal_avg_z <- round((total$salary_avg - mean(total$salary_avg,na.rm=TRUE))/sd(total$salary_avg,na.rm=TRUE), 2)  # compute normalized mpg
-total$sal_type <- ifelse(total$sal_avg_z < 0, "below", "above")  # above / below avg flag
-total <- total[order(total$sal_avg_z), ]  # sort
-total$county <- factor(total$county, levels = total$county)  # convert to factor to retain sorted order in plot.
+# filtering to avg salary for 2014 and grouping by county
+total_sal_2014 <-  select(total,county,salary_avg,year) %>%
+    filter(year == '2014') %>%
+    group_by(county,year) %>%
+    summarise(salary_avg=mean(salary_avg))
+ View(total_sal_2014)
+ write_csv(total_sal_2014,'total_sal_2014.csv')
 
-View(total)
-# Diverging Barcharts
+ total_sal_2014$sal_avg_z <- round((total_sal_2014$salary_avg - mean(total_sal_2014$salary_avg,na.rm=TRUE))/sd(total_sal_2014$salary_avg,na.rm=TRUE), 2)  # compute normalized salary
+ total_sal_2014$sal_type <- ifelse(total_sal_2014$sal_avg_z < 0, "below", "above")  # above / below avg flag
+ total_sal_2014 <- total_sal_2014[order(total_sal_2014$sal_avg_z), ]  # sort
+ total_sal_2014$county <- factor(total_sal_2014$county, levels = total_sal_2014$county)  # convert to factor to retain sorted order in plot.
 
-ggplot(total_2014, aes(x=county, y=sal_avg_z, label=sal_avg_z)) +
+
+
+# Diverging Barcharts for avg salary
+
+ggplot(total_sal_2014, aes(x=county, y=sal_avg_z, label=sal_avg_z)) +
     geom_bar(stat='identity', aes(fill=sal_type), width=.5)  +
     scale_fill_manual(name="Average Salary",
                       labels = c("Above Average", "Below Average"),
                       values = c("above"="#00ba38", "below"="#f8766d")) +
-    labs(subtitle="Normalised Average Salary for Counties",
-         title= "Diverging Bars") +
+    labs(subtitle="Diverging Bar Plot",
+         title= "Normalised Average Salary for Counties") +
     coord_flip()
+
+
+# filtering to Avg Act score and grouping by county
+edu_act <-  select(edu_1,county,ACT_Composite) %>%
+    group_by(county) %>%
+    summarise(ACT_Composite=mean(ACT_Composite))
+View(edu_act)
+write_csv(edu_act,'edu_act.csv')
+# data prep for act score for education
+edu_act$ACT_Composite_avg <- round((edu_act$ACT_Composite - mean(edu_act$ACT_Composite,na.rm=TRUE))/sd(edu_act$ACT_Composite,na.rm=TRUE), 2)  # compute normalized act scores
+edu_act$act_comp_type <- ifelse(edu_act$ACT_Composite_avg < 0, "below", "above")  # above / below avg flag
+edu_act <- edu_act[order(edu_act$ACT_Composite_avg), ]  # sort
+edu_act$county <- factor(edu_act$county, levels = edu_act$county)  # convert to factor to retain sorted order in plot.
+
+# Diverging Barcharts for avg act scores
+ggplot(edu_act, aes(x=county, y=ACT_Composite_avg, label= 'ACT Scores')) +
+    geom_bar(stat='identity', aes(fill=act_comp_type), width=.5)  +
+    scale_fill_manual(name="ACT Composite",
+                      labels = c("Above Average", "Below Average"),
+                      values = c("above"="#00ba38", "below"="#f8766d")) +
+    labs(subtitle="Diverging Bars Plot",
+         title= "Normalised ACT scores for Counties") +
+    coord_flip()
+View(edu_1)

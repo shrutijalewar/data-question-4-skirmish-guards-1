@@ -1,0 +1,153 @@
+---
+title: "Education and IRS"
+output: 
+  flexdashboard::flex_dashboard:
+    storyboard: true
+---
+
+```{r setup, include=FALSE}
+library("flexdashboard")
+library("tidyverse")
+library("dplyr")
+library("magrittr")
+library("ggplot2")
+library("readxl")
+library("GGally")
+library("PerformanceAnalytics")
+
+edu_2014 <- read_csv("data/education_data.csv")
+edu_1 <- select( edu_2014, county, AlgII ,BioI,Chemistry,ELA,EngI,EngII,EngIII,Math,Science,ACT_Composite,Graduation,Pct_Native_American,Pct_SWD,
+                 Pct_Black,Pct_Hispanic,Pct_EL,Pct_ED,Pct_BHN,Pct_Chronically_Absent,
+                 Pct_Suspended,Pct_Expelled,Per_Pupil_Expenditures,Enrollment
+)
+# filtering to Avg Act score and grouping by county
+edu_act <-  select(edu_1,county,ACT_Composite) %>%
+    group_by(county) %>%
+    summarise(ACT_Composite=mean(ACT_Composite))
+
+# data prep for act score for education
+edu_act$ACT_Composite_avg <- round((edu_act$ACT_Composite - mean(edu_act$ACT_Composite,na.rm=TRUE))/sd(edu_act$ACT_Composite,na.rm=TRUE), 2)  # compute normalized act scores
+edu_act$act_comp_type <- ifelse(edu_act$ACT_Composite_avg < 0, "below", "above")  # above / below avg flag
+edu_act <- edu_act[order(edu_act$ACT_Composite_avg), ]  # sort
+edu_act$county <- factor(edu_act$county, levels = edu_act$county)  # convert to factor to retain sorted order in plot.
+edu_act <- edu_act[c(1:10,82:92),]
+
+total_sal_2014 <- read_csv('total_sal_2014.csv')
+total_sal_2014$sal_avg_z <- round((total_sal_2014$salary_avg - mean(total_sal_2014$salary_avg,na.rm=TRUE))/sd(total_sal_2014$salary_avg,na.rm=TRUE), 2)  # compute normalized salary
+ total_sal_2014$sal_type <- ifelse(total_sal_2014$sal_avg_z < 0, "below", "above")  # above / below avg flag
+ total_sal_2014 <- total_sal_2014[order(total_sal_2014$sal_avg_z), ]  # sort
+ total_sal_2014$county <- factor(total_sal_2014$county, levels = total_sal_2014$county)  # convert to factor to retain sorted order in plot.
+
+total_sal_2014 <- total_sal_2014[c(1:10,82:92),]
+```
+
+### Correlation Matrix IRS: This is data for the state of TN for the year 2014 broken out by zip code.
+
+```{r}
+irs_avg <- read_csv('irs_avg.csv')
+irs_avg_1 <- select(irs_avg, year, agi_amt_avg,salary_avg, taxable_interest_avg, mortgage_amt_avg ,prop_tax_avg,taxable_income_avg,ordinary_dividends_avg, business_income_avg, net_capital_gain_avg,taxable_ira_dist_avg, pension_avg, unemployment_avg, social_security_avg,item_deduction_avg, charity_avg, state_local_income_tax_avg, state_local_sales_tax_avg, total_tax_credit_avg,balance_due_avg,refund_avg,earned_income_credit_avg, excess_eaned_income_credit_avg )
+ggcorr(irs_avg_1)
+```
+
+***
+
+The data is sourced from [IRS](https://www.irs.gov/statistics/soi-tax-stats-individual-income-tax-statistics-zip-code-data-soi) for all Tennessee zip codes for Tax Years 2011, 2012, 2013, 2014, and 2015
+
+All positive wealth markers co relate positively.
+
+Excess income credit and earned income credit negatively co relate with positive wealth markers.
+
+Average Unemployment compensation is worth taking an individual look at.
+
+###Average Unemplyment Compensation Over the Years
+
+```{r}
+ggplot(irs_avg, aes(year,unemployment_avg)) +
+    geom_boxplot(aes(color = factor(year)))
+```
+
+
+***
+
+This is a good trend, and corelates well with unemployment rate reported for [TN](https://data.bls.gov/timeseries/LASST470000000000003)
+
+
+### Correlation Matrix for Education Data: Data collected for the public school K-12 system for the year 2014 across the state of TN.
+
+```{r}
+edu_raw <- read.csv('data/achievement_profile_data_with_CORE.csv')
+edu_2 <- select( edu_raw, system_name,BioI,Chemistry,ELA,EngI,EngII,EngIII,AlgI,AlgII,Math,Science,ACT_Composite,Graduation,Pct_Native_American,Pct_SWD,
+                 Pct_Black,Pct_Hispanic,Pct_EL,Pct_ED,Pct_BHN,Pct_Chronically_Absent,
+                 Pct_Suspended,Pct_Expelled,Per_Pupil_Expenditures,Enrollment
+)
+ggcorr(edu_2)
+```
+
+
+***
+
+All performace markers co relate positively with each other such as differnt test scores and graduation rate.
+
+Discipline and attendance (lack of!) markers positively corelate with each other and negatively with performance markers. This comes as no surprise at [absenteeism hinders learning.](https://www.theatlantic.com/education/archive/2015/09/skipping-school-hurting-younger-learners/403309/)
+
+Per Pupil expense seems to co relate positively with discipline markers, are we throwing money at the problem or is there more to it?
+
+### Per Pupil Expenditure and ACT Composite Performance
+
+
+```{r}
+ggplot(edu_raw, aes(ACT_Composite,Per_Pupil_Expenditures)) +
+    geom_boxplot(aes(color = factor(round(ACT_Composite/3, digits=0))))
+```
+
+***
+
+schools with low ACT scores are getting more funding, but so are schools that are performing high on ACT scores. 
+
+The mediocre performers are not getting as much funding as the low and high performers. 
+
+Reality as always is more complex than that.
+
+
+### Diverging Bar Plot for displaying the top and bottom 10 counties based on average salaries based on IRS data. 
+
+```{r}
+ggplot(total_sal_2014, aes(x=county, y=sal_avg_z, label=sal_avg_z)) +
+    geom_bar(stat='identity', aes(fill=sal_type), width=.5)  +
+    scale_fill_manual(name="Average Salary",
+                      labels = c("Above Average", "Below Average"),
+                      values = c("above"="#00ba38", "below"="#f8766d")) +
+    labs(subtitle="Diverging Bar Plot",
+         title= "Normalised Average Salary for Counties") +
+    coord_flip()
+
+```
+
+
+***
+
+Top 10 and bottom 10 counties and the degree of deviation from mean for Salaries.
+
+
+
+### Diverging bar plot for the ACT Composite score for the top and bottom 10 counties.
+
+```{r}
+ggplot(edu_act, aes(x=county, y=ACT_Composite_avg, label= 'ACT Scores')) +
+    geom_bar(stat='identity', aes(fill=act_comp_type), width=.5)  +
+    scale_fill_manual(name="ACT Composite",
+                      labels = c("Above Average", "Below Average"),
+                      values = c("above"="#00ba38", "below"="#f8766d")) +
+    labs(subtitle="Diverging Bars Plot",
+         title= "Normalised ACT scores for Counties") +
+    coord_flip()
+```
+
+
+***
+
+Top 10 and bottom 10 counties and the degree of deviation from mean for ACT Scores.
+
+There are a hoard of articles and studies that tie socioeconomic status, [earning potential](https://ed100.org/lessons/poverty) of parents to student [performance outcomes](https://www.nashville.gov/Portals/0/SiteContent/SocialServices/docs/plann_coord/ChildPoverty120215.pdf). 
+
+The way these are done are generally at individual family levels or tightly knit homogenous communities. That kind of data at a similar granularity is not what we have and makes our studies and comparisons complicated and noisy.

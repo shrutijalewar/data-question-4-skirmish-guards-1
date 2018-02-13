@@ -1,0 +1,99 @@
+---
+title: "IRS and Education"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+
+```{r setup, include=FALSE}
+library("flexdashboard")
+library("tidyverse")
+library("dplyr")
+library("magrittr")
+library("ggplot2")
+library("readxl")
+library("GGally")
+library("PerformanceAnalytics")
+
+edu_2014 <- read_csv("data/education_data.csv")
+edu_1 <- select( edu_2014, county, AlgII ,BioI,Chemistry,ELA,EngI,EngII,EngIII,Math,Science,ACT_Composite,Graduation,Pct_Native_American,Pct_SWD,
+                 Pct_Black,Pct_Hispanic,Pct_EL,Pct_ED,Pct_BHN,Pct_Chronically_Absent,
+                 Pct_Suspended,Pct_Expelled,Per_Pupil_Expenditures,Enrollment
+)
+# filtering to Avg Act score and grouping by county
+edu_act <-  select(edu_1,county,ACT_Composite) %>%
+    group_by(county) %>%
+    summarise(ACT_Composite=mean(ACT_Composite))
+
+# data prep for act score for education
+edu_act$ACT_Composite_avg <- round((edu_act$ACT_Composite - mean(edu_act$ACT_Composite,na.rm=TRUE))/sd(edu_act$ACT_Composite,na.rm=TRUE), 2)  # compute normalized act scores
+edu_act$act_comp_type <- ifelse(edu_act$ACT_Composite_avg < 0, "below", "above")  # above / below avg flag
+edu_act <- edu_act[order(edu_act$ACT_Composite_avg), ]  # sort
+edu_act$county <- factor(edu_act$county, levels = edu_act$county)  # convert to factor to retain sorted order in plot.
+edu_act <- edu_act[c(1:10,82:92),]
+
+total_sal_2014 <- read_csv('total_sal_2014.csv')
+total_sal_2014$sal_avg_z <- round((total_sal_2014$salary_avg - mean(total_sal_2014$salary_avg,na.rm=TRUE))/sd(total_sal_2014$salary_avg,na.rm=TRUE), 2)  # compute normalized salary
+ total_sal_2014$sal_type <- ifelse(total_sal_2014$sal_avg_z < 0, "below", "above")  # above / below avg flag
+ total_sal_2014 <- total_sal_2014[order(total_sal_2014$sal_avg_z), ]  # sort
+ total_sal_2014$county <- factor(total_sal_2014$county, levels = total_sal_2014$county)  # convert to factor to retain sorted order in plot.
+
+total_sal_2014 <- total_sal_2014[c(1:10,82:92),]
+```
+
+Column {data-width=650, .tabset}
+-----------------------------------------------------------------------
+
+### Correlation Matrix IRS
+
+```{r warning=FALSE}
+irs_avg <- read_csv('irs_avg.csv')
+ggcorr(irs_avg)
+```
+
+### Correlation Matrix Education
+
+##### Points to note
+1. All test scores positively co-relate with graduation and ACT Composite score, except AlgI that seems to have no co relation.
+2. Per Pupil expenditure does not show positive correlation with any of the test scores.
+```{r}
+edu_raw <- read.csv('data/achievement_profile_data_with_CORE.csv')
+edu_2 <- select( edu_raw, system_name,BioI,Chemistry,ELA,EngI,EngII,EngIII,AlgI,AlgII,Math,Science,ACT_Composite,Graduation,Pct_Native_American,Pct_SWD,
+                 Pct_Black,Pct_Hispanic,Pct_EL,Pct_ED,Pct_BHN,Pct_Chronically_Absent,
+                 Pct_Suspended,Pct_Expelled,Per_Pupil_Expenditures,Enrollment
+)
+ggcorr(edu_2)
+```
+
+Column {data-width=350}
+-----------------------------------------------------------------------
+
+### Salary Avg Top and Bottom
+
+
+```{r}
+ggplot(total_sal_2014, aes(x=county, y=sal_avg_z, label=sal_avg_z)) +
+    geom_bar(stat='identity', aes(fill=sal_type), width=.5)  +
+    scale_fill_manual(name="Average Salary",
+                      labels = c("Above Average", "Below Average"),
+                      values = c("above"="#00ba38", "below"="#f8766d")) +
+    labs(subtitle="Diverging Bar Plot",
+         title= "Normalised Average Salary for Counties") +
+    coord_flip()
+```
+
+### ACT Scores for Counties Top and Bottom
+
+```{r}
+# Diverging Barcharts for avg act scores
+ggplot(edu_act, aes(x=county, y=ACT_Composite_avg, label= 'ACT Scores')) +
+    geom_bar(stat='identity', aes(fill=act_comp_type), width=.5)  +
+    scale_fill_manual(name="ACT Composite",
+                      labels = c("Above Average", "Below Average"),
+                      values = c("above"="#00ba38", "below"="#f8766d")) +
+    labs(subtitle="Diverging Bars Plot",
+         title= "Normalised ACT scores for Counties") +
+    coord_flip()
+```
