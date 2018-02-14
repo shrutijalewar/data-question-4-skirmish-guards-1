@@ -1,5 +1,5 @@
 ---
-title: "Data Question 4 Extension: Flexdashboard"
+title: "Data Question 4 Extension: Exploration of TN Academic and Income Data"
 output: 
   flexdashboard::flex_dashboard:
     orientation: columns
@@ -8,6 +8,18 @@ output:
     social: menu
     source: embed
 ---
+
+<style>                     
+.navbar {
+  background-color:blue;
+  border-color:red;
+}
+.navbar-brand {
+color:white!important;
+}
+
+</style>   
+
 
 ```{r setup, include=FALSE, message = FALSE, warning = FALSE, echo=FALSE}
 library("flexdashboard")
@@ -43,34 +55,19 @@ counties <- map_data("county")
 tn_counties <- subset(counties, region == "tennessee")
 ```
 
-Column {data-width=650}
+
+Column{data-width=600}{.tabset}
 -----------------------------------------------------------------------
 
-### Averaged Salary by County
+### Correlation Matrix of Core Education Data
 
-```{r}
-total_sal_2014$sal_avg_z <- round((total_sal_2014$salary_avg - mean(total_sal_2014$salary_avg,na.rm=TRUE))/sd(total_sal_2014$salary_avg,na.rm=TRUE), 2)  # compute normalized mpg
-total_sal_2014$sal_type <- ifelse(total_sal_2014$sal_avg_z < 0, 'below', 'above')  # above / below avg flag
-total_sal_2014 <- total_sal_2014[order(total_sal_2014$sal_avg_z), ]  # sort
-total_sal_2014$county <- factor(total_sal_2014$county, levels = total_sal_2014$county)  # convert to factor to retain sorted order in plot.
+* Data gathered from the TN department of Education from the [the 2014 - 2015 school year](https://www.tn.gov/education/data/data-downloads.html) seen within the correlation matrix below. 
 
-# Diverging Barcharts
+* A consistant positive correlation between academic attributes can be seen.  
 
-ggplot(total_sal_2014, aes(x=county, y=sal_avg_z, label=sal_avg_z)) +
-   geom_bar(stat='identity', aes(fill=sal_type), width=.5)  +
-   scale_fill_manual(name='Average Salary',
-                     labels = c('Above Average', 'Below Average'),
-                     values = c('above'='#00ba38', 'below'='#f8766d')) +
-   labs(subtitle='Divering Bar Plot',
-        title= 'Normalised Average Salary for Counties') +
-   coord_flip()
+* ACT composite scores are noticably negatively correlated with percent absent, economically disadvantaged, and suspended. 
 
-```
-
-### Correlation Matric of Core Education Data
-
-```{r}
-
+```{r echo=FALSE, fig.width=15, fig.height=10}
 edu_2 <- dplyr::select(edu_raw, system_name,BioI,Chemistry,ELA,EngI,EngII,EngIII,AlgI,AlgII,Math,Science,ACT_Composite,Graduation,Pct_Native_American,Pct_SWD,
                 Pct_Black,Pct_Hispanic,Pct_EL,Pct_ED,Pct_BHN,Pct_Chronically_Absent,
                 Pct_Suspended,Pct_Expelled,Per_Pupil_Expenditures,Enrollment
@@ -79,12 +76,29 @@ ggcorr(edu_2)
 
 ```
 
-Column {.tabset}
+
+### Correlation Matrix of Averaged IRS Data
+
+* Data gathered from the IRS from the [2011 - 2015](https://www.irs.gov/statistics/soi-tax-stats-individual-income-tax-statistics-zip-code-data-soi) can been seen within the correlation matrix below. These metrics ere averaged in order to not take population into account.
+
+* A consistant positive correlation between avergaed amounts coming into the household and avg AGI.  
+
+* Conversely, earned income credits are clearly negatively correlated with the AGI attributes.  
+
+```{r echo=FALSE, fig.width=15, fig.height=10}
+
+ggcorr(irs)
+
+
+```
+
+
+Column {data-width=600}{.tabset}
 -----------------------------------------------------------------------
 
 ### Per Pupil Expenditure
 
-```{r fig.width=10, fig.height=5}
+```{r echo=FALSE, fig.width=15, fig.height=10}
 
 tn_base <- ggplot(data = tn_df, mapping = aes(x = long, y = lat, group = group)) + 
   coord_fixed(1.3) + 
@@ -128,7 +142,7 @@ tn_per_pupil
 
 ### Graduation Rates
 
-```{r echo=FALSE, fig.width=10, fig.height=5}
+```{r echo=FALSE, fig.width=15, fig.height=10}
 tn_graduation <- tn_base + 
   geom_polygon(data = tn_core, aes(fill = Graduation), color = "white") +
   geom_polygon(color = "black", fill = NA) +
@@ -141,7 +155,7 @@ tn_graduation
 
 ### Dropout Rate
 
-```{r echo=FALSE, fig.width=10, fig.height=5}
+```{r echo=FALSE, fig.width=15, fig.height=10}
 tn_dropout <- tn_base + 
   geom_polygon(data = tn_core, aes(fill = Dropout), color = "white") +
   geom_polygon(color = "black", fill = NA) +
@@ -153,7 +167,7 @@ tn_dropout
 
 ### Percentage of Black, Hispanic, and Native American 
 
-```{r echo=FALSE, fig.width=10, fig.height=5}
+```{r echo=FALSE, fig.width=15, fig.height=10}
 tn_per_BHN <- tn_base + 
   geom_polygon(data = tn_core, aes(fill = Pct_BHN), color = "white") +
   geom_polygon(color = "black", fill = NA) +

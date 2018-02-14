@@ -79,6 +79,8 @@ avgs_by_county <- merged_county %>%
   arrange(desc(avg_Math), desc(avg_Eng), desc(avg_Sci)) %>% 
   ungroup()
 
+View(avgs_by_county)
+
 #How many Core regions are there? ---> 8
 
 merged_county %>% 
